@@ -1,4 +1,4 @@
-package gorequests
+package main
 
 import (
 	"bytes"
@@ -10,7 +10,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"regexp"
 	"strings"
 	"time"
 )
@@ -26,6 +25,7 @@ type Req struct {
 	ProxyUrl string
 	Header   map[string]string
 	Redirect bool
+	Verify   bool `default:"true"`
 }
 
 type response struct {
@@ -37,12 +37,6 @@ type response struct {
 func randomUa() string {
 	ua := browser.Random()
 	return ua
-}
-
-func hostFormat(host string) string {
-	re := regexp.MustCompile("http*.://.*?/")
-	host = re.FindString(host)
-	return host
 }
 
 func HeaderMap(jsonData ...string) map[string]string {
@@ -68,19 +62,35 @@ func (requests Req) Requests() (response, error) {
 
 	//代理
 	//proxyUrl := "http://127.0.0.1:8080"
-	var client = &http.Client{Timeout: time.Second * 15}
-
+	// var client = &http.Client{Timeout: time.Second * 15}
+	tr := &http.Transport{}
 	if requests.ProxyUrl != "" {
 		proxy, _ := url.Parse(requests.ProxyUrl)
-		tr := &http.Transport{
-			Proxy:           http.ProxyURL(proxy),
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+
+		if requests.Verify {
+			tr = &http.Transport{
+				Proxy: http.ProxyURL(proxy),
+			}
+
+		} else {
+			tr = &http.Transport{
+				Proxy:           http.ProxyURL(proxy),
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			}
+
 		}
 
-		client = &http.Client{
-			Transport: tr,
-			Timeout:   time.Second * 15, //超时时间
+	} else {
+		if !requests.Verify {
+			tr = &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			}
 		}
+	}
+
+	client := &http.Client{
+		Transport: tr,
+		Timeout:   time.Second * 15, //超时时间
 	}
 
 	req, err := http.NewRequest(requests.Method, requests.Host, bytes.NewReader(requests.Data))
@@ -105,12 +115,12 @@ func (requests Req) Requests() (response, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		if !strings.Contains(fmt.Sprint(err), "disable Redirect") {
-			log.Error(fmt.Sprintf("%s | err", hostFormat(requests.Host)))
+			log.Error(fmt.Sprintf("%s | %v", requests.Host, err))
 		}
 		return response{}, err
 	}
 	if resp.StatusCode != 200 {
-		log.Info(fmt.Sprintf("%s | Status_Code: %d", hostFormat(requests.Host), resp.StatusCode))
+		log.Info(fmt.Sprintf("%s | Status_Code: %d", requests.Host, resp.StatusCode))
 	}
 	respBody, err := io.ReadAll(resp.Body)
 	respText := string(respBody)
@@ -121,7 +131,7 @@ func (requests Req) Requests() (response, error) {
 		}
 	}(resp.Body)
 	if err != nil && respBody == nil {
-		log.Error(fmt.Sprintf("%s | %s", hostFormat(requests.Host), err))
+		log.Error(fmt.Sprintf("%s | %v", requests.Host, err))
 		return response{StatusCode: &resp.StatusCode}, err
 	}
 	return response{
