@@ -122,11 +122,11 @@ func (requests Req) Requests() (response, error) {
 	}(resp.Body)
 	if err != nil && respBody == nil {
 		log.Error(fmt.Sprintf("%s | %s", hostFormat(requests.Host), err))
-		return response{statusCode: &resp.StatusCode}, err
+		return response{StatusCode: &resp.StatusCode}, err
 	}
 	return response{
-		statusCode: &resp.StatusCode,
-		text:       &respText,
-		raw:        &respBody,
+		StatusCode: &resp.StatusCode,
+		Text:       &respText,
+		Raw:        &respBody,
 	}, nil
 }
