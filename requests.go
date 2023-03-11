@@ -16,7 +16,7 @@ import (
 )
 
 type Requests interface {
-	requests() (response, error)
+	Requests() (response, error)
 }
 
 type Req struct {
@@ -64,7 +64,7 @@ func HeaderMap(jsonData ...string) map[string]string {
 }
 
 // (*int, *[]byte, error)
-func (requests Req) requests() (response, error) {
+func (requests Req) Requests() (response, error) {
 
 	//代理
 	//proxyUrl := "http://127.0.0.1:8080"
