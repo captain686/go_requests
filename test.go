@@ -13,10 +13,10 @@ func main() {
 		ProxyUrl: "http://127.0.0.1:8080",
 		//Header:   headers,
 	}
-	response, err := req.requests()
+	response, err := req.Requests()
 	if err != nil {
 		return
 	}
 
-	fmt.Println(*response.text)
+	fmt.Println(*response.Text)
 }
