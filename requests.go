@@ -29,9 +29,9 @@ type Req struct {
 }
 
 type response struct {
-	statusCode *int
-	text       *string
-	raw        *[]byte
+	StatusCode *int
+	Text       *string
+	Raw        *[]byte
 }
 
 func randomUa() string {
