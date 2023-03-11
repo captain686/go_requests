@@ -16,6 +16,5 @@ func main() {
 	if err != nil {
 		return
 	}
-
 	fmt.Println(*response.Text)
 }

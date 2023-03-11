@@ -25,7 +25,7 @@ type Req struct {
 	ProxyUrl string
 	Header   map[string]string
 	Redirect bool
-	Verify   bool `default:"true"`
+	NoVerify bool
 }
 
 type response struct {
@@ -57,7 +57,7 @@ func HeaderMap(jsonData ...string) map[string]string {
 	return headers
 }
 
-// (*int, *[]byte, error)
+// Requests (*int, *[]byte, error)
 func (requests Req) Requests() (response, error) {
 
 	//代理
@@ -67,20 +67,18 @@ func (requests Req) Requests() (response, error) {
 	if requests.ProxyUrl != "" {
 		proxy, _ := url.Parse(requests.ProxyUrl)
 
-		if requests.Verify {
+		if !requests.NoVerify {
 			tr = &http.Transport{
 				Proxy: http.ProxyURL(proxy),
 			}
-
 		} else {
 			tr = &http.Transport{
 				Proxy:           http.ProxyURL(proxy),
 				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 			}
 		}
-
 	} else {
-		if !requests.Verify {
+		if requests.NoVerify {
 			tr = &http.Transport{
 				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 			}
