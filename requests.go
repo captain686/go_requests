@@ -77,7 +77,6 @@ func (requests Req) Requests() (response, error) {
 				Proxy:           http.ProxyURL(proxy),
 				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 			}
-
 		}
 
 	} else {
@@ -115,12 +114,12 @@ func (requests Req) Requests() (response, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		if !strings.Contains(fmt.Sprint(err), "disable Redirect") {
-			log.Error(fmt.Sprintf("%s | %v", requests.Host, err))
+			log.Error(fmt.Sprintf("118 %s | %v", requests.Host, err))
 		}
 		return response{}, err
 	}
 	if resp.StatusCode != 200 {
-		log.Info(fmt.Sprintf("%s | Status_Code: %d", requests.Host, resp.StatusCode))
+		log.Info(fmt.Sprintf("123 %s | Status_Code: %d", requests.Host, resp.StatusCode))
 	}
 	respBody, err := io.ReadAll(resp.Body)
 	respText := string(respBody)
@@ -131,7 +130,7 @@ func (requests Req) Requests() (response, error) {
 		}
 	}(resp.Body)
 	if err != nil && respBody == nil {
-		log.Error(fmt.Sprintf("%s | %v", requests.Host, err))
+		log.Error(fmt.Sprintf("134 %s | %v", requests.Host, err))
 		return response{StatusCode: &resp.StatusCode}, err
 	}
 	return response{
